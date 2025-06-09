@@ -5,5 +5,6 @@ enum class VideoHoster {
     LoadX,
     FileMoon,
     Luluvdo,
-    Vidmoly
+    Vidmoly,
+    DoodStream
 }

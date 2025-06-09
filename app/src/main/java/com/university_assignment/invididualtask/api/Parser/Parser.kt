@@ -4,6 +4,7 @@ import com.university_assignment.invididualtask.api.interfaces.IParser
 import com.university_assignment.invididualtask.data.models.AnimeModel
 import com.university_assignment.invididualtask.data.models.EpisodeLanguage
 import com.university_assignment.invididualtask.data.models.EpisodeModel
+import com.university_assignment.invididualtask.data.models.EpisodeStreamInfo
 import com.university_assignment.invididualtask.data.models.SeasonAnimeModel
 import com.university_assignment.invididualtask.data.models.VideoHoster
 import com.university_assignment.invididualtask.utils.Constants
@@ -40,7 +41,7 @@ class Parser @Inject constructor() : IParser {
         val seasonTitle = seasonBlock!!.attr("title").toString()
         val isFilm = seasonTitle.contains("Alle Filme")
         val seasonNumberRegex = Regex("""Staffel (\d+)""")
-        val seasonNumber = if (isFilm) 0 else seasonNumberRegex.find(seasonTitle)!!.groups[1].toString().toInt()
+        val seasonNumber = if (isFilm) 0 else seasonNumberRegex.find(seasonTitle)?.groups[1]!!.value.toInt()
 
         val episodes: Array<EpisodeModel> = episodeBlocks.mapIndexed { episodeCount, episodeBlock ->
             val episodeNumber = episodeCount + 1
@@ -50,14 +51,8 @@ class Parser @Inject constructor() : IParser {
 
             val hosters: Array<VideoHoster> = hosterBlocks.map { hosterBlock ->
                 val hosterTitle = hosterBlock.attr("title").toString()
-                when (hosterTitle) {
-                    "VOE" -> VideoHoster.VOE
-                    "Filemoon" -> VideoHoster.FileMoon
-                    "LoadX" -> VideoHoster.LoadX
-                    "Vidmoly" -> VideoHoster.Vidmoly
-                    "Luluvdo" -> VideoHoster.Luluvdo
-                    else -> throw Error("unknown hoster: $hosterTitle for the anime: $seasonTitle episode $episodeNumber")
-                }
+                hostTitleToClass(hosterTitle)
+                    ?: throw Error("unknown hoster: $hosterTitle for the anime: $seasonTitle episode $episodeNumber")
             }.toTypedArray()
 
             val languages: Array<EpisodeLanguage> = languageBlocks.map { langBlock ->
@@ -83,5 +78,46 @@ class Parser @Inject constructor() : IParser {
             seasonNumber = seasonNumber,
             isFilm = isFilm
         )
+    }
+
+    override fun getEpisodeStreamInfo(pageBody: String): List<EpisodeStreamInfo>? {
+        val doc = Jsoup.parse(pageBody)
+
+        val hostStreamBlocks = doc.select("li[data-lang-key]") ?: return null
+
+        return hostStreamBlocks.map { el ->
+            val link = "https://${Constants.SITE_ROOT}${el.attr("data-link-target")}"
+            val langId = el.attr("data-lang-key")
+            val lang = when(langId) {
+                "1" -> EpisodeLanguage.DE_VOICE
+                "2" -> EpisodeLanguage.EN_SUBTITLE
+                "3" -> EpisodeLanguage.DE_SUBTITLE
+                else -> throw Error("unknown language id: $langId")
+            }
+            val iconTitle = el.select("i")?.attr("title")
+            val host = hostTitleToClass(iconTitle!!) ?:
+                throw Error("unknown host: $iconTitle")
+
+            EpisodeStreamInfo(link, host, lang)
+        }
+    }
+
+    private fun hostTitleToClass(hostTitle: String): VideoHoster? {
+        val hostToClasses = mapOf<String, VideoHoster>(
+            "VOE" to VideoHoster.VOE,
+            "Filemoon" to VideoHoster.FileMoon,
+            "LoadX" to VideoHoster.LoadX,
+            "Vidmoly" to VideoHoster.Vidmoly,
+            "Luluvdo" to VideoHoster.Luluvdo,
+            "Doodstream" to VideoHoster.DoodStream,
+        )
+
+        for ((hostName, hostClass) in hostToClasses) {
+            if (hostTitle.lowercase().contains(hostName.lowercase())) {
+                return hostClass
+            }
+        }
+
+        return null
     }
 }

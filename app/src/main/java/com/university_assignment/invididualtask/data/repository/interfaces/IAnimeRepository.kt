@@ -1,7 +1,7 @@
 package com.university_assignment.invididualtask.data.repository.interfaces
 
 import com.university_assignment.invididualtask.data.models.AnimeModel
-import com.university_assignment.invididualtask.data.models.BriefAnimeModel
+import com.university_assignment.invididualtask.data.models.EpisodeStreamInfo
 import com.university_assignment.invididualtask.data.models.SeasonAnimeModel
 
 interface IAnimeRepository {
@@ -14,4 +14,9 @@ interface IAnimeRepository {
      * Get the information about the season, its episodes and title
      */
     suspend fun getSeasonInfo(animeTitle: String, seasonNumber: Int, isFilm: Boolean): SeasonAnimeModel?
+
+    /**
+     * Get the information about the season, what exactly video providers support for what available language mode
+     */
+    suspend fun getEpisodeInfo(animeTitle: String, seasonNumber: Int, episodeNumber: Int, isFilm: Boolean): List<EpisodeStreamInfo>?
 }

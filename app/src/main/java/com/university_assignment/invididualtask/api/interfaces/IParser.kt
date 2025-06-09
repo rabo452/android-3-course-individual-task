@@ -1,6 +1,7 @@
 package com.university_assignment.invididualtask.api.interfaces
 
 import com.university_assignment.invididualtask.data.models.AnimeModel
+import com.university_assignment.invididualtask.data.models.EpisodeStreamInfo
 import com.university_assignment.invididualtask.data.models.SeasonAnimeModel
 
 interface IParser {
@@ -15,4 +16,9 @@ interface IParser {
      * @param pageBody the HTML document from the website
      */
     fun getSeasonInfo(pageBody: String): SeasonAnimeModel?
+
+    /**
+     * Get the information about the host links and what providers
+     */
+    fun getEpisodeStreamInfo(pageBody: String): List<EpisodeStreamInfo>?
 }
