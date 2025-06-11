@@ -1,17 +1,9 @@
 package com.university_assignment.invididualtask.ui.screens.MainScreen
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -35,7 +27,6 @@ import androidx.compose.ui.unit.sp
 import com.university_assignment.invididualtask.data.models.anime.BriefAnimeModel
 import com.university_assignment.invididualtask.data.models.anime.HomeAnimeModel
 import com.university_assignment.invididualtask.ui.shared.components.AnimeCardList
-import com.university_assignment.invididualtask.ui.shared.components.BriefAnimeCard
 import com.university_assignment.invididualtask.utils.NavScreen
 
 @SuppressLint("SetJavaScriptEnabled")

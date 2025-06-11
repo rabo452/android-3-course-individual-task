@@ -4,5 +4,6 @@ data class AnimeModel(
     val title: String,
     val thumbnailUrl: String,
     val description: String,
-    val seasonsCount: Int
+    val seasonsCount: Int,
+    val isFilmAvailable: Boolean = false,
 )

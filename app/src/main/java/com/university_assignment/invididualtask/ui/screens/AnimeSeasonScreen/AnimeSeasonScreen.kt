@@ -1,9 +1,19 @@
 package com.university_assignment.invididualtask.ui.screens.AnimeSeasonScreen
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,11 +26,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil3.compose.AsyncImage
 import com.university_assignment.invididualtask.data.models.anime.AnimeModel
 import com.university_assignment.invididualtask.data.models.anime.SeasonAnimeModel
 import com.university_assignment.invididualtask.ui.screens.AnimeEpisodeScreen.viewModel.SharedEpisodeViewModel
 import com.university_assignment.invididualtask.ui.shared.viewModels.AnimeRepositoryViewModel
+import com.university_assignment.invididualtask.ui.theme.localThemeColors
 import com.university_assignment.invididualtask.utils.NavScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -33,6 +50,7 @@ fun AnimeSeasonScreen(
     episodeViewModel: SharedEpisodeViewModel,
     animeRepositoryViewModel: AnimeRepositoryViewModel = hiltViewModel()
 ) {
+    val theme = localThemeColors.current
     val title by seasonViewModel.animeTitle.collectAsState()
     val seasonNumber by seasonViewModel.seasonNumber.collectAsState()
     val isFilm by seasonViewModel.isFilm.collectAsState()
@@ -67,23 +85,106 @@ fun AnimeSeasonScreen(
         return
     }
 
+    val _seasonInfo = seasonInfo!!
+    val _animeInfo = animeInfo!!
+    val verticalScrollState = rememberScrollState()
+    val currentSeasonNumber = _seasonInfo.seasonNumber
+    var seasonsCount = _animeInfo.seasonsCount
+    val currentEpisode = 1
+    val currentEpisodeCount = _seasonInfo.episodes.size
+
+    // temporary, it should be fixed in the service
+    if (!_animeInfo.isFilmAvailable) {
+        seasonsCount -= 1
+    }
+
     Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier.fillMaxSize().verticalScroll(verticalScrollState),
     ) {
-        val seasonNumber = seasonInfo!!.seasonNumber
-        val isFilm = seasonInfo!!.isFilm
-        for (episode in seasonInfo!!.episodes) {
-            Button(onClick = {
-                episodeViewModel.updateIsFilm(isFilm)
-                episodeViewModel.updateSeasonNumber(seasonNumber)
-                episodeViewModel.updateEpisodeNumber(episode.number)
-                episodeViewModel.updateAnimeInfo(animeInfo!!)
-                navController.navigate(NavScreen.EpisodePage.pageName)
-            }) {
-                Text("show ${episode.title}, episode number: ${episode.number}")
+        Column(
+            modifier = Modifier.padding(horizontal = 15.dp).padding(top=15.dp).fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            AsyncImage(
+                modifier = Modifier.height(225.dp),
+                model = _animeInfo.thumbnailUrl,
+                contentDescription = null,
+            )
+
+            Text(
+                _animeInfo.title,
+                modifier = Modifier.padding(top=15.dp),
+                textAlign = TextAlign.Center,
+                fontSize = 20.sp
+            )
+
+            Text(
+                _animeInfo.description,
+                modifier = Modifier.padding(top=15.dp),
+                textAlign = TextAlign.Start
+            )
+        }
+
+        Column(
+            modifier = Modifier.padding(top=10.dp).fillMaxWidth().background(theme.seasonPageBackgroundColor).padding(horizontal = 15.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Seasons:", modifier = Modifier.padding(top = 15.dp), color=Color(255, 255, 255))
+            FlowRow(modifier = Modifier.padding(top=15.dp)) {
+                for (seasonNumber in 1..seasonsCount) {
+                    Column(
+                        modifier = Modifier
+                            .size(40.dp, 40.dp)
+                            .background(if (seasonNumber == currentSeasonNumber) theme.selectedSeasonColor else theme.unselectedColor)
+                            .clickable {
+                                seasonViewModel.updateSeasonNumber(seasonNumber)
+                                seasonViewModel.updateTitle(title!!)
+                                seasonViewModel.updateIsFilm(false)
+                                navController.navigate(NavScreen.SeasonPage.pageName)
+                            },
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(seasonNumber.toString(), color = Color(255, 255, 255))
+                    }
+                }
+            }
+
+            Text("Episodes:", modifier = Modifier.padding(top = 15.dp), color=Color(255, 255, 255))
+            FlowRow(modifier = Modifier.padding(top=15.dp)) {
+                for (episodeNumber in 1..currentEpisodeCount) {
+                    Column(
+                        modifier = Modifier
+                            .size(40.dp, 40.dp)
+                            .background(if (currentEpisode == episodeNumber) theme.selectedSeasonColor else theme.unselectedColor)
+                            .clickable {
+                                episodeViewModel.updateIsFilm(isFilm)
+                                episodeViewModel.updateSeasonNumber(currentSeasonNumber)
+                                episodeViewModel.updateEpisodeNumber(episodeNumber)
+                                episodeViewModel.updateAnimeInfo(animeInfo!!)
+                                navController.navigate(NavScreen.EpisodePage.pageName)
+                            },
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(episodeNumber.toString(), color = Color(255, 255, 255))
+                    }
+                }
             }
         }
     }
 }
 
+//val seasonNumber = seasonInfo!!.seasonNumber
+//val isFilm = seasonInfo!!.isFilm
+//for (episode in seasonInfo!!.episodes) {
+//    Button(onClick = {
+//        episodeViewModel.updateIsFilm(isFilm)
+//        episodeViewModel.updateSeasonNumber(seasonNumber)
+//        episodeViewModel.updateEpisodeNumber(episode.number)
+//        episodeViewModel.updateAnimeInfo(animeInfo!!)
+//        navController.navigate(NavScreen.EpisodePage.pageName)
+//    }) {
+//        Text("show ${episode.title}, episode number: ${episode.number}")
+//    }
+//}

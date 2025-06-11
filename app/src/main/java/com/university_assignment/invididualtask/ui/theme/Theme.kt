@@ -56,7 +56,10 @@ fun InvididualTaskTheme(
     }
 
     val themeColors = ThemeColors(
-        backgroundColor = Color(0, 255, 0)
+        selectedSeasonColor = Color(23, 61, 84),
+        selectedEpisodeColor = Color(23, 61, 84),
+        unselectedColor = Color.Transparent,
+        seasonPageBackgroundColor = Color(0, 0, 0)
     )
 
     CompositionLocalProvider(localThemeColors provides themeColors) {
