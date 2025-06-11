@@ -1,6 +1,8 @@
 package com.university_assignment.invididualtask.utils.interfaces
 
 interface IUrlHelper {
+
+    fun generateMainPageUrl(): String
     /**
      * Generate the url of main page (page of the first season)
      */

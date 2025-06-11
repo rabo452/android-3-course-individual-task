@@ -1,4 +1,4 @@
-package com.university_assignment.invididualtask.data.models
+package com.university_assignment.invididualtask.data.models.videoHoster
 
 enum class VideoHoster {
     VOE,

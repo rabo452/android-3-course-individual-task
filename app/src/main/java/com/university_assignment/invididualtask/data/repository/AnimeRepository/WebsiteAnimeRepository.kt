@@ -2,12 +2,11 @@ package com.university_assignment.invididualtask.data.repository.AnimeRepository
 
 import com.university_assignment.invididualtask.api.interfaces.IParser
 import com.university_assignment.invididualtask.api.interfaces.IWebClient
-import com.university_assignment.invididualtask.data.models.AnimeModel
-import com.university_assignment.invididualtask.data.models.EpisodeStreamInfo
-import com.university_assignment.invididualtask.data.models.EpisodeStreamPart
-import com.university_assignment.invididualtask.data.models.SeasonAnimeModel
+import com.university_assignment.invididualtask.data.models.anime.AnimeModel
+import com.university_assignment.invididualtask.data.models.anime.HomeAnimeModel
+import com.university_assignment.invididualtask.data.models.videoHoster.EpisodeStreamInfo
+import com.university_assignment.invididualtask.data.models.anime.SeasonAnimeModel
 import com.university_assignment.invididualtask.data.repository.interfaces.IAnimeRepository
-import com.university_assignment.invididualtask.utils.Constants
 import com.university_assignment.invididualtask.utils.interfaces.IUrlHelper
 import io.ktor.client.statement.bodyAsText
 import jakarta.inject.Inject
@@ -17,6 +16,13 @@ class WebsiteAnimeRepository @Inject constructor(
     private val parser: IParser,
     private val webClient: IWebClient
 ) : IAnimeRepository {
+    override suspend fun getAnimeMainInfo(): HomeAnimeModel? {
+        val url = urlHelper.generateMainPageUrl()
+        val bodyPage = getPageResponse(url)
+
+        return parser.getMainPageInfo(bodyPage)
+    }
+
     override suspend fun getAnimeInfo(animeTitle: String): AnimeModel? {
         val url = urlHelper.generateAnimeMainPageUrl(animeTitle)
         val bodyPage = getPageResponse(url)

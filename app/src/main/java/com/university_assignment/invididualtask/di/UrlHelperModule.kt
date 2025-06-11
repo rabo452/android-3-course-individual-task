@@ -1,6 +1,6 @@
 package com.university_assignment.invididualtask.di
 
-import com.university_assignment.invididualtask.utils.WebsiteUrlHelper.UrlHelper
+import com.university_assignment.invididualtask.utils.UrlHelper
 import com.university_assignment.invididualtask.utils.interfaces.IUrlHelper
 import dagger.Binds
 import dagger.Module

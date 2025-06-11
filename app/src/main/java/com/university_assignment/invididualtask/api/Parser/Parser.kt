@@ -1,17 +1,67 @@
 package com.university_assignment.invididualtask.api.Parser
 
 import com.university_assignment.invididualtask.api.interfaces.IParser
-import com.university_assignment.invididualtask.data.models.AnimeModel
-import com.university_assignment.invididualtask.data.models.EpisodeLanguage
-import com.university_assignment.invididualtask.data.models.EpisodeModel
-import com.university_assignment.invididualtask.data.models.EpisodeStreamInfo
-import com.university_assignment.invididualtask.data.models.SeasonAnimeModel
-import com.university_assignment.invididualtask.data.models.VideoHoster
+import com.university_assignment.invididualtask.data.models.anime.AnimeModel
+import com.university_assignment.invididualtask.data.models.anime.BriefAnimeModel
+import com.university_assignment.invididualtask.data.models.anime.EpisodeLanguage
+import com.university_assignment.invididualtask.data.models.anime.EpisodeModel
+import com.university_assignment.invididualtask.data.models.anime.HomeAnimeModel
+import com.university_assignment.invididualtask.data.models.anime.NewEpisode
+import com.university_assignment.invididualtask.data.models.videoHoster.EpisodeStreamInfo
+import com.university_assignment.invididualtask.data.models.anime.SeasonAnimeModel
+import com.university_assignment.invididualtask.data.models.videoHoster.VideoHoster
 import com.university_assignment.invididualtask.utils.Constants
 import jakarta.inject.Inject
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 
 class Parser @Inject constructor() : IParser {
+    override fun getMainPageInfo(pageBody: String): HomeAnimeModel? {
+        val doc = Jsoup.parse(pageBody)
+        // regex for getting season number and episode from the text
+        val newEpisodeTextRegex = Regex("""S(\d{2})\s*E(\d{2})""")
+
+        val parseFunc: (block: Element) -> BriefAnimeModel = { block ->
+            val title = (block.select("h3")?.first()?.text())!!
+            val thumbnailUrl = "https://${Constants.SITE_ROOT}/${block.select("img").attr("src")}"
+
+            BriefAnimeModel(title, thumbnailUrl)
+        }
+
+        val recommendedAnimeBlocks = doc.select(".carousel")?.first()?.select(".coverListItem a") ?: return null
+        val newAnimeBlocks = doc.select(".carousel")?.get(2)?.select(".coverListItem a") ?: return null
+        val likedAnimeBlocks = doc.select(".carousel")?.get(3)?.select(".coverListItem a") ?: return null
+        val newEpisodeBlocks = doc.select(".newEpisodeList .row > .col-md-12") ?: return null
+
+        val recommendedAnimes = recommendedAnimeBlocks.map(parseFunc).toTypedArray()
+        val newAnimes = newAnimeBlocks.map(parseFunc).toTypedArray()
+        val likedAnimes = likedAnimeBlocks.map(parseFunc).toTypedArray()
+        val newEpisodes = newEpisodeBlocks.map { block ->
+            val time = (block.select(".elementFloatRight")?.first()?.text())!!
+            val episodeText = block.select(".listTag")?.first()?.text()
+            val title = block.select("strong")?.first()?.text()
+            val episodeLangImgSrc = (block.select("img.flag")?.get(1)?.attr("src"))!!
+            val episodeLang = when {
+                episodeLangImgSrc.contains("japanese-german") -> EpisodeLanguage.DE_SUBTITLE
+                episodeLangImgSrc.contains("german") -> EpisodeLanguage.DE_VOICE
+                episodeLangImgSrc.contains("english") -> EpisodeLanguage.EN_SUBTITLE
+                else -> throw Error("no appropriate language found for the this image: $episodeLangImgSrc")
+            }
+
+            val match = newEpisodeTextRegex.find(episodeText!!)!!
+            val (season, episode) = match.destructured
+            NewEpisode(
+                title!!,
+                time,
+                episodeLang,
+                episode!!.toInt(),
+                season!!.toInt()
+            )
+        }.toTypedArray()
+
+        return HomeAnimeModel(recommendedAnimes, newEpisodes, newAnimes, likedAnimes)
+    }
+
     override fun getAnimeInfo(pageBody: String): AnimeModel? {
         val doc = Jsoup.parse(pageBody)
 

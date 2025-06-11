@@ -1,12 +1,19 @@
 package com.university_assignment.invididualtask.data.repository.interfaces
 
-import com.university_assignment.invididualtask.data.models.AnimeModel
-import com.university_assignment.invididualtask.data.models.EpisodeStreamInfo
-import com.university_assignment.invididualtask.data.models.SeasonAnimeModel
+import com.university_assignment.invididualtask.data.models.anime.AnimeModel
+import com.university_assignment.invididualtask.data.models.anime.HomeAnimeModel
+import com.university_assignment.invididualtask.data.models.videoHoster.EpisodeStreamInfo
+import com.university_assignment.invididualtask.data.models.anime.SeasonAnimeModel
 
 interface IAnimeRepository {
+
     /**
-     * Get general anime information: title, description, rates, seasons count and so on
+     * Get information about anime
+     */
+    suspend fun getAnimeMainInfo(): HomeAnimeModel?
+    /**
+     * Get general information about the anime from the web site:
+     * title, description, rates, seasons count and so on
      */
     suspend fun getAnimeInfo(animeTitle: String): AnimeModel?
 
@@ -16,7 +23,7 @@ interface IAnimeRepository {
     suspend fun getSeasonInfo(animeTitle: String, seasonNumber: Int, isFilm: Boolean): SeasonAnimeModel?
 
     /**
-     * Get the information about the season, what exactly video providers support for what available language mode
+     * Get the information about the episode, what exactly video providers support for what available language mode
      */
     suspend fun getEpisodeInfo(animeTitle: String, seasonNumber: Int, episodeNumber: Int, isFilm: Boolean): List<EpisodeStreamInfo>?
 }

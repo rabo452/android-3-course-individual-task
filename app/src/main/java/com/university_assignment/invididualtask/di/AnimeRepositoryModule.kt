@@ -12,7 +12,5 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 abstract class AnimeRepositoryModule {
     @Binds
-    abstract fun bindComponentB(
-        impl: WebsiteAnimeRepository
-    ): IAnimeRepository
+    abstract fun bind(impl: WebsiteAnimeRepository): IAnimeRepository
 }
