@@ -48,5 +48,5 @@ fun String.normalizeToAscii(): String {
  * !, ?, :, and so on
  */
 fun String.removeNonAlphanumeric(): String {
-    return this.replace(Regex("[^A-Za-z0-9]"), "")
+    return this.replace(Regex("[^A-Za-z0-9\\-]"), "")
 }

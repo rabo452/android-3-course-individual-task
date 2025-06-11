@@ -47,6 +47,8 @@ val ktor_version: String by project
 val nav_version = "2.9.0"
 
 dependencies {
+    implementation("io.coil-kt.coil3:coil-compose:3.2.0")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.2.0")
     implementation("androidx.navigation:navigation-compose:$nav_version")
     implementation("androidx.navigation:navigation-ui:$nav_version")
     implementation("androidx.media3:media3-exoplayer-hls:1.7.1")

@@ -1,35 +1,42 @@
 package com.university_assignment.invididualtask.ui.screens.MainScreen
 
 import android.annotation.SuppressLint
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.university_assignment.invididualtask.api.client.WebClient
-import com.university_assignment.invididualtask.data.models.anime.BriefAnimeModel
 import com.university_assignment.invididualtask.ui.screens.AnimeSeasonScreen.viewModel.SharedAnimeSeasonViewModel
 import com.university_assignment.invididualtask.ui.shared.viewModels.AnimeRepositoryViewModel
-import com.university_assignment.invididualtask.utils.NavScreen
-import io.ktor.client.statement.bodyAsBytes
-import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-import java.text.Normalizer
-
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.university_assignment.invididualtask.data.models.anime.BriefAnimeModel
+import com.university_assignment.invididualtask.data.models.anime.HomeAnimeModel
+import com.university_assignment.invididualtask.ui.shared.components.AnimeCardList
+import com.university_assignment.invididualtask.ui.shared.components.BriefAnimeCard
+import com.university_assignment.invididualtask.utils.NavScreen
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -39,30 +46,67 @@ fun MainScreen(
     animeRepositoryViewModel: AnimeRepositoryViewModel = hiltViewModel()
 ) {
     val repository = animeRepositoryViewModel.repository
+    var mainPageInfo by remember {
+        mutableStateOf<HomeAnimeModel?>(null)
+    }
+    var isLoaded by remember {
+        mutableStateOf(false)
+    }
+
+    // load the animes from the repository
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
-            val res = repository.getAnimeMainInfo()
-            res
+            mainPageInfo = repository.getAnimeMainInfo()
+            isLoaded = true
         }
     }
 
-//    val briefAnime = BriefAnimeModel(
-//        "attack on titan",
-//        "https://aniworld.to/public/img/cover/attack-on-titan-stream-cover-gy1YrBf3uQ8k2I0aAXK9TggID2Kn7Koz_150x225.jpg"
-//    )
-//
-//    Column(
-//        modifier = Modifier.fillMaxSize(),
-//        horizontalAlignment = Alignment.CenterHorizontally,
-//        verticalArrangement = Arrangement.Center
-//    ) {
-//        Button(onClick = {
-//            seasonViewModel.updateSeasonNumber(1)
-//            seasonViewModel.updateTitle(briefAnime.title)
-//            seasonViewModel.updateIsFilm(false)
-//            navController.navigate(NavScreen.SeasonPage.pageName)
-//        }) {
-//            Text("click on me")
-//        }
-//    }
+    if (!isLoaded) {
+        Text("loading...")
+        return
+    }
+
+    if (mainPageInfo == null) {
+        Text("Some error happened")
+        return
+    }
+
+    // remove null checkers
+    val _mainPageInfo = mainPageInfo!!
+
+    val verticalScrollState = rememberScrollState()
+    val onCardSelectCallback: (anime: BriefAnimeModel) -> Unit = { anime ->
+        seasonViewModel.updateSeasonNumber(1)
+        seasonViewModel.updateTitle(anime.title)
+        seasonViewModel.updateIsFilm(false)
+        navController.navigate(NavScreen.SeasonPage.pageName)
+    }
+
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 15.dp)
+            .fillMaxWidth()
+            .verticalScroll(verticalScrollState)
+    ) {
+        Text("Recommended:",
+            modifier = Modifier.padding(vertical = 15.dp).fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontSize = 18.sp
+        )
+        AnimeCardList(_mainPageInfo.animeRecommendation.toList()) { anime -> onCardSelectCallback(anime) }
+
+        Text("New:",
+            modifier = Modifier.padding(vertical = 15.dp).fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontSize = 18.sp
+        )
+        AnimeCardList(_mainPageInfo.newAnimes.toList()) { anime -> onCardSelectCallback(anime) }
+
+        Text("Popular:",
+            modifier = Modifier.padding(vertical = 15.dp).fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontSize = 18.sp
+        )
+        AnimeCardList(_mainPageInfo.likedAnimes.toList()) { anime -> onCardSelectCallback(anime) }
+    }
 }

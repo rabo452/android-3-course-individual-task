@@ -23,7 +23,7 @@ class Parser @Inject constructor() : IParser {
 
         val parseFunc: (block: Element) -> BriefAnimeModel = { block ->
             val title = (block.select("h3")?.first()?.text())!!
-            val thumbnailUrl = "https://${Constants.SITE_ROOT}/${block.select("img").attr("src")}"
+            val thumbnailUrl = "https://${Constants.SITE_ROOT}${block.select("img").attr("data-src")}"
 
             BriefAnimeModel(title, thumbnailUrl)
         }
