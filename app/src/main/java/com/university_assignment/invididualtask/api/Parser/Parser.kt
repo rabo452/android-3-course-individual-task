@@ -69,13 +69,15 @@ class Parser @Inject constructor() : IParser {
         val titleBlock = doc.select(".series-title h1")?.first()
         val descriptionBlock = doc.select(".seri_des")?.first()
         val seasonBlocks = doc.select(".hosterSiteDirectNav > ul:nth-child(1) > li")
+        val filmBlock = doc.select("a[title='Alle Filme']")?.first()
 
         val allExist = arrayOf(imageBlock, titleBlock, descriptionBlock, seasonBlocks).all { el -> el != null }
         return if(allExist) AnimeModel(
             title = titleBlock!!.text(),
             thumbnailUrl = "https://${Constants.SITE_ROOT}${imageBlock!!.attr("data-src")}",
             description = descriptionBlock!!.text(),
-            seasonsCount = seasonBlocks!!.count() - 1
+            seasonsCount = (seasonBlocks!!.count() - 1) + (if (filmBlock != null) -1 else 0),
+            isFilmAvailable = filmBlock != null
         ) else null
     }
 

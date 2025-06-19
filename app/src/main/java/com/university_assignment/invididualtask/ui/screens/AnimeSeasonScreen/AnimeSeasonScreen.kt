@@ -3,11 +3,9 @@ package com.university_assignment.invididualtask.ui.screens.AnimeSeasonScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,7 +25,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,6 +50,7 @@ fun AnimeSeasonScreen(
     val theme = localThemeColors.current
     val title by seasonViewModel.animeTitle.collectAsState()
     val seasonNumber by seasonViewModel.seasonNumber.collectAsState()
+    val currentEpisode by seasonViewModel.episodeNumber.collectAsState()
     val isFilm by seasonViewModel.isFilm.collectAsState()
     val animeRepository = animeRepositoryViewModel.repository
     var isPageLoaded by remember {
@@ -90,13 +88,7 @@ fun AnimeSeasonScreen(
     val verticalScrollState = rememberScrollState()
     val currentSeasonNumber = _seasonInfo.seasonNumber
     var seasonsCount = _animeInfo.seasonsCount
-    val currentEpisode = 1
     val currentEpisodeCount = _seasonInfo.episodes.size
-
-    // temporary, it should be fixed in the service
-    if (!_animeInfo.isFilmAvailable) {
-        seasonsCount -= 1
-    }
 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(verticalScrollState),
@@ -131,6 +123,25 @@ fun AnimeSeasonScreen(
         ) {
             Text("Seasons:", modifier = Modifier.padding(top = 15.dp), color=Color(255, 255, 255))
             FlowRow(modifier = Modifier.padding(top=15.dp)) {
+                if (_animeInfo.isFilmAvailable) {
+                    Column(
+                        modifier = Modifier
+                            .size(80.dp, 40.dp)
+                            .background(if (isFilm) theme.selectedSeasonColor else theme.unselectedColor)
+                            .clickable {
+                                seasonViewModel.updateSeasonNumber(-1)
+                                seasonViewModel.updateEpisodeNumber(1)
+                                seasonViewModel.updateTitle(title!!)
+                                seasonViewModel.updateIsFilm(true)
+                                navController.navigate(NavScreen.SeasonPage.pageName)
+                            },
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("Films", color = Color(255, 255, 255))
+                    }
+                }
+
                 for (seasonNumber in 1..seasonsCount) {
                     Column(
                         modifier = Modifier
@@ -138,6 +149,7 @@ fun AnimeSeasonScreen(
                             .background(if (seasonNumber == currentSeasonNumber) theme.selectedSeasonColor else theme.unselectedColor)
                             .clickable {
                                 seasonViewModel.updateSeasonNumber(seasonNumber)
+                                seasonViewModel.updateEpisodeNumber(1)
                                 seasonViewModel.updateTitle(title!!)
                                 seasonViewModel.updateIsFilm(false)
                                 navController.navigate(NavScreen.SeasonPage.pageName)
@@ -161,6 +173,7 @@ fun AnimeSeasonScreen(
                                 episodeViewModel.updateIsFilm(isFilm)
                                 episodeViewModel.updateSeasonNumber(currentSeasonNumber)
                                 episodeViewModel.updateEpisodeNumber(episodeNumber)
+                                seasonViewModel.updateEpisodeNumber(episodeNumber)
                                 episodeViewModel.updateAnimeInfo(animeInfo!!)
                                 navController.navigate(NavScreen.EpisodePage.pageName)
                             },
@@ -174,17 +187,3 @@ fun AnimeSeasonScreen(
         }
     }
 }
-
-//val seasonNumber = seasonInfo!!.seasonNumber
-//val isFilm = seasonInfo!!.isFilm
-//for (episode in seasonInfo!!.episodes) {
-//    Button(onClick = {
-//        episodeViewModel.updateIsFilm(isFilm)
-//        episodeViewModel.updateSeasonNumber(seasonNumber)
-//        episodeViewModel.updateEpisodeNumber(episode.number)
-//        episodeViewModel.updateAnimeInfo(animeInfo!!)
-//        navController.navigate(NavScreen.EpisodePage.pageName)
-//    }) {
-//        Text("show ${episode.title}, episode number: ${episode.number}")
-//    }
-//}

@@ -5,31 +5,27 @@ import jakarta.inject.Inject
 import java.text.Normalizer
 
 class UrlHelper @Inject constructor() : IUrlHelper {
-
     override fun generateMainPageUrl(): String = "https://${Constants.SITE_ROOT}"
 
     override fun generateAnimeMainPageUrl(animeTitle: String): String {
-        return "https://${Constants.SITE_ROOT}/anime/stream" +
-                "/${animeTitle.convertAnimeTitle()}"
+        return "https://${Constants.SITE_ROOT}/anime/stream/${animeTitle.convertAnimeTitle()}"
     }
 
     override fun generateSeasonUrl(animeTitle: String, seasonNumber: Int, isFilm: Boolean): String {
-        return "https://${Constants.SITE_ROOT}/anime/stream" +
-                "/${animeTitle.convertAnimeTitle()}/" +
+        return "https://${Constants.SITE_ROOT}/anime/stream/${animeTitle.convertAnimeTitle()}/" +
                 if (isFilm) "filme" else "staffel-${seasonNumber}"
     }
 
     override fun generateEpisodeUrl(animeTitle: String, seasonNumber: Int, episodeNumber: Int, isFilm: Boolean): String {
-        return "https://${Constants.SITE_ROOT}/anime/stream" +
-                "/${animeTitle.convertAnimeTitle()}/" +
-                if (isFilm) "filme/film-${episodeNumber}"
-                else "staffel-${seasonNumber}/episode-${episodeNumber}"
+        return "https://${Constants.SITE_ROOT}/anime/stream/${animeTitle.convertAnimeTitle()}/" +
+                if (isFilm) "filme/film-${episodeNumber}" else "staffel-${seasonNumber}/episode-${episodeNumber}"
     }
 }
 
 fun String.convertAnimeTitle(): String {
     return this
         .replace(' ', '-')
+        .replace(Regex("-{2,}"), "-")
         .normalizeToAscii()
         .removeNonAlphanumeric()
         .lowercase()

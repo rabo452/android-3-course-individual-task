@@ -68,6 +68,7 @@ fun MainScreen(
     val verticalScrollState = rememberScrollState()
     val onCardSelectCallback: (anime: BriefAnimeModel) -> Unit = { anime ->
         seasonViewModel.updateSeasonNumber(1)
+        seasonViewModel.updateEpisodeNumber(1)
         seasonViewModel.updateTitle(anime.title)
         seasonViewModel.updateIsFilm(false)
         navController.navigate(NavScreen.SeasonPage.pageName)

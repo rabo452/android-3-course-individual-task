@@ -37,10 +37,7 @@ class WebsiteAnimeRepository @Inject constructor(
         return parser.getSeasonInfo(bodyPage)
     }
 
-    override suspend fun getEpisodeInfo(
-        animeTitle: String, seasonNumber: Int,
-        episodeNumber: Int, isFilm: Boolean,
-    ): List<EpisodeStreamInfo>? {
+    override suspend fun getEpisodeInfo(animeTitle: String, seasonNumber: Int, episodeNumber: Int, isFilm: Boolean): List<EpisodeStreamInfo>? {
         val url = urlHelper.generateEpisodeUrl(animeTitle, seasonNumber, episodeNumber, isFilm)
         val bodyPage = getPageResponse(url)
 
